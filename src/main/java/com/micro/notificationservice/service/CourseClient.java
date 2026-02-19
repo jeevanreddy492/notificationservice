@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.micro.notificationservice.dto.RemainderDTO;
+import com.micro.notificationservice.security.JwtUtil;
 
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -17,9 +18,11 @@ import lombok.RequiredArgsConstructor;
 public class CourseClient {
 
     private final WebClient.Builder webClientBuilder;
+    private final JwtUtil jwtUtil;
     
-    public CourseClient(WebClient.Builder webClientBuilder) {
+    public CourseClient(WebClient.Builder webClientBuilder, JwtUtil jwtUtil) {
         this.webClientBuilder = webClientBuilder;
+        this.jwtUtil=jwtUtil;
     }
     
 
@@ -27,14 +30,20 @@ public class CourseClient {
     private String courseServiceUrl;
 
     public List<RemainderDTO> getPendingSubmissions() {
+    	
+        
+    	 String token = jwtUtil.generateServiceToken("notification-service");
 
-        return webClientBuilder.baseUrl(courseServiceUrl)
-                .build()
-                .get()
-                .uri("/api/assignments/pending-submissions")
-                .retrieve()
-                .bodyToFlux(RemainderDTO.class)
-                .collectList()
-                .block();
+         return webClientBuilder.baseUrl(courseServiceUrl)
+                 .build()
+                 .get()
+                 .uri("/api/assignments/pending-submissions")
+                 .headers(headers -> headers.setBearerAuth(token))
+                 .retrieve()
+                 .bodyToFlux(RemainderDTO.class)
+                 .collectList()
+                 .block();
     }
 }
+// in course service spring.security.oauth2.resourceserver.jwt.secret-key=your-secret-key
+

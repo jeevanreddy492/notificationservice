@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -31,17 +32,19 @@ public class ReminderScheduler {
     private final CourseClient courseClient;
     private final EmailNotificationService emailService;
     private final NotificationRepository notificationRepository;
+    private final SimpMessagingTemplate messagingTemplate;
     
     private static final Logger log =
             LoggerFactory.getLogger(NotificationConsumer.class);
 
 
     public ReminderScheduler(CourseClient courseClient, EmailNotificationService emailService,
-			NotificationRepository notificationRepository) {
-		super();
+			NotificationRepository notificationRepository,SimpMessagingTemplate messagingTemplate) {
+		
 		this.courseClient = courseClient;
 		this.emailService = emailService;
 		this.notificationRepository = notificationRepository;
+		this.messagingTemplate=messagingTemplate;
 	}
 
 
@@ -90,6 +93,8 @@ public class ReminderScheduler {
             notification.setCreatedAt(LocalDateTime.now());
 
             notificationRepository.save(notification);
+            
+            messagingTemplate.convertAndSendToUser(dto.getStudentEmail().toString(),"/queue/notifications",dto);
 
 
         }

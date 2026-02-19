@@ -28,7 +28,9 @@ public class SecurityConfig {
                 "/swagger-ui/**",
                 "/swagger-ui.html",
                 "/test/**",
-                "/api/assignments/pending-submissions"
+                "/api/assignments/pending-submissions",
+                "/api/auth/**",
+                "/ws/**"
             ).permitAll()
             .anyRequest().authenticated()
         )

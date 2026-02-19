@@ -1,12 +1,19 @@
 package com.micro.notificationservice.security;
 
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
+import java.security.Key;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtUtil {
@@ -29,6 +36,11 @@ public class JwtUtil {
     public String extractUserId(String token) {
         return extractClaims(token).getSubject();
     }
+    
+    public String extractEmail(String token) {
+        return extractClaims(token).getSubject();
+    }
+
 
     public boolean validateToken(String token) {
         try {
@@ -38,13 +50,31 @@ public class JwtUtil {
             return false;
         }
     }
-    //remove this function
-    public String generateTestToken(String userId) {
+
+    public String generateToken(String email) {
+
         return Jwts.builder()
-                .setSubject(userId)
+                .setSubject(email) 
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+    
+    public String generateServiceToken(String serviceName) {
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", "SERVICE");
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(serviceName)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hour
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
 
 }
 

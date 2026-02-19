@@ -15,6 +15,6 @@ public class GenerateToken {
    }
    @GetMapping("/token")
    public String generateToken() {
-       return jwtUtil.generateTestToken("user123");
+       return jwtUtil.generateToken("jeevanreddypappu@gmail.com");
    }
 }
